@@ -61,16 +61,20 @@ const rightLeg = leftLeg.clone();
 rightLeg.position.x = 0.3;
 soldier.add(rightLeg);
  
+leftLeg.geometry.translate(0, 0.55, 0);
+rightLeg.geometry.translate(0, -0.5, 0);
+
 //اليدين
 
 const armGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.1, 16);
 
 // اليد اليسرى
 const leftArm = new THREE.Mesh(armGeo, material);
-leftArm.position.set(-0.63, 1.4, 0);     // يسار + في مستوى الكتف
-leftArm.rotation.z = Math.PI / 1;        // ندوّرها لتصبح أفقية
-
+leftArm.geometry.translate(0, 0.55, 0); 
+leftArm.position.set(-0.63, 1.8, 0);
+leftArm.rotation.z = Math.PI / 1;
 soldier.add(leftArm);
+
 
 // اليد اليمنى (نسخة من اليسرى)
 const rightArm = leftArm.clone();
@@ -87,20 +91,64 @@ hat.position.y = 2.8;
 
 soldier.add(hat);
 
+
+
+// السلاح 
+const gunMaterial = new THREE.MeshStandardMaterial({
+  color: 0x000000,   // أسود
+  roughness: 0.8,
+  metalness: 0.2
+});
+
+const gunGeometry = new THREE.CylinderGeometry(0.08, 0.08, 2.2, 16);
+const gun = new THREE.Mesh(gunGeometry, gunMaterial);
+
+// 🔧 تموضع السلاح
+gun.position.set(-0.2, 1.5, -0.4); // يسار + خلف + وسط الظهر
+gun.rotation.z = Math.PI / -1.1;    // ميلان ليبدو كبندقية
+gun.rotation.y = Math.PI / 8;      // ميل خفيف للخارج
+
+soldier.add(gun); 
+
+
 // إضافة الجندي للمشهد
 scene.add(soldier);
 
+//  الأقدام
+const footMaterial = hatMat; //
+
+// القدم اليسرى
+const leftFoot = new THREE.Mesh(
+  new THREE.BoxGeometry(0.4, 0.3, 0.9), 
+  footMaterial
+);
+leftFoot.position.set(0 , -0.6, 0.2); 
+leftLeg.add(leftFoot);
+// القدم اليمنى
+const rightFoot = leftFoot.clone();
+rightFoot.position.x = 0;
+rightLeg.add(rightFoot);
 
 // --- D. CONTROLES (La navegación) ---
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; // Añade inercia al movimiento (más suave)
 
+
 // --- E. ANIMACIÓN (Game Loop) ---
+let walkTime = 0;
+
 function animate() {
   requestAnimationFrame(animate);
 
-  soldier.rotation.y += 0.005;
-  soldier.rotation.x += 0.002;
+  walkTime += 0.05; // سرعة المشي
+
+  // 🦵 الأرجل (عكس بعض)
+  leftLeg.rotation.x = Math.sin(walkTime) * 0.6;
+  rightLeg.rotation.x = -Math.sin(walkTime) * 0.6;
+
+  // 💪 اليدين (عكس الأرجل)
+  leftArm.rotation.x = -Math.sin(walkTime) * 0.6;
+  rightArm.rotation.x = Math.sin(walkTime) * 0.6;
 
   controls.update();
   renderer.render(scene, camera);
